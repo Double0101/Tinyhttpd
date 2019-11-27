@@ -432,13 +432,18 @@ int startup(u_short *port)
     int on = 1;
     struct sockaddr_in name;
 
+    /* init a tcp/ip socket */
     httpd = socket(PF_INET, SOCK_STREAM, 0);
     if (httpd == -1)
         error_die("socket");
+    /* clear all bits
+     * there are 8 useless bytes at the end of sockaddr_in
+     * to compat sockaddr */
     memset(&name, 0, sizeof(name));
     name.sin_family = AF_INET;
     name.sin_port = htons(*port);
     name.sin_addr.s_addr = htonl(INADDR_ANY);
+    /* config socket could reuse */
     if ((setsockopt(httpd, SOL_SOCKET, SO_REUSEADDR, &on, sizeof(on))) < 0)  
     {  
         error_die("setsockopt failed");
