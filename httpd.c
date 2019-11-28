@@ -225,6 +225,7 @@ void execute_cgi(int client, const char *path,
     int numchars = 1;
     int content_length = -1;
 
+    /* get request info: content-length content */
     buf[0] = 'A'; buf[1] = '\0';
     if (strcasecmp(method, "GET") == 0)
         while ((numchars > 0) && strcmp("\n", buf))  /* read & discard headers */
@@ -264,12 +265,15 @@ void execute_cgi(int client, const char *path,
     }
     sprintf(buf, "HTTP/1.0 200 OK\r\n");
     send(client, buf, strlen(buf), 0);
+    /* pid = 0 in sub process
+     * pid > 0 in main process */
     if (pid == 0)  /* child: CGI script */
     {
         char meth_env[255];
         char query_env[255];
         char length_env[255];
-
+        /* pipe[1] write only
+         * pipe[0] read only */
         dup2(cgi_output[1], STDOUT);
         dup2(cgi_input[0], STDIN);
         close(cgi_output[0]);
