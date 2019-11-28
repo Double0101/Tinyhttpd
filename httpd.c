@@ -76,6 +76,7 @@ void accept_request(void *arg)
     j=i;
     method[i] = '\0';
 
+    /* only implemented get and post methods */
     if (strcasecmp(method, "GET") && strcasecmp(method, "POST"))
     {
         unimplemented(client);
@@ -86,6 +87,7 @@ void accept_request(void *arg)
         cgi = 1;
 
     i = 0;
+    /* clear space */
     while (ISspace(buf[j]) && (j < numchars))
         j++;
     while (!ISspace(buf[j]) && (i < sizeof(url) - 1) && (j < numchars))
@@ -104,6 +106,7 @@ void accept_request(void *arg)
         {
             cgi = 1;
             *query_string = '\0';
+            /* pinpoint the query_string to the args */
             query_string++;
         }
     }
@@ -111,9 +114,11 @@ void accept_request(void *arg)
     sprintf(path, "htdocs%s", url);
     if (path[strlen(path) - 1] == '/')
         strcat(path, "index.html");
+    /* acquire file info */
     if (stat(path, &st) == -1) {
         while ((numchars > 0) && strcmp("\n", buf))  /* read & discard headers */
             numchars = get_line(client, buf, sizeof(buf));
+        /* return 404 not found */
         not_found(client);
     }
     else
@@ -412,6 +417,7 @@ void serve_file(int client, const char *filename)
         not_found(client);
     else
     {
+        /* send http headers & file content */
         headers(client, filename);
         cat(client, resource);
     }
